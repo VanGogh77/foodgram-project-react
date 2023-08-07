@@ -61,7 +61,6 @@ class Ingredient(models.Model):
 class Recipes(models.Model):
     author = models.CharField(
         User,
-        verbose_name='Автор',
         max_length=150,
         unique=True,
     )
