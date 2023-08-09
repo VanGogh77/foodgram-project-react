@@ -11,7 +11,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'blablabla')
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -62,14 +62,8 @@ WSGI_APPLICATION = 'foodgram_backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        # Меняем настройку Django: теперь для работы будет использоваться
-        # бэкенд postgresql
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DB', 'food_db'),
-        'USER': os.getenv('POSTGRES_USER', 'food_user'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
-        'HOST': os.getenv('DB_HOST', ''),
-        'PORT': os.getenv('DB_PORT', 5432)
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -124,3 +118,5 @@ REST_FRAMEWORK = {
 DJOSER = {
     'LOGIN_FIELD': 'email',
 }
+
+FILE_NAME = 'shopping_cart.txt'

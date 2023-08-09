@@ -1,5 +1,6 @@
 from http import HTTPStatus
 from django.shortcuts import render
+from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, filters, generics, mixins
@@ -8,6 +9,7 @@ from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from .pagination import CustomPaginator
 
+from foodgram_backend.settings import FILE_NAME
 from users.models import Subscribe, User
 from recipes.models import Tag, Ingredient, Recipes, Favorites, Shopping_list
 from .permissions import IsOwnerOrReadOnly
@@ -90,7 +92,7 @@ class UserViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
 class TagViewSet(mixins.ListModelMixin,
           mixins.RetrieveModelMixin,
           viewsets.GenericViewSet):
-    queryset = Tag.object.all()
+    queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = [AllowAny]
 
@@ -98,7 +100,7 @@ class TagViewSet(mixins.ListModelMixin,
 class IngredientViewSet(mixins.ListModelMixin,
                  mixins.RetrieveModelMixin,
                  viewsets.GenericViewSet):
-    queryset = Ingredient.object.all()
+    queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = [AllowAny]
     search_fields = ('^name', )
@@ -160,18 +162,39 @@ class RecipeViewSet(viewsets.ModelViewSet):
             serializer = RecipeSerializer(recipe, data=request.data,
                                           context={"request": request})
             serializer.is_valid(raise_exception=True)
-            if not .objects.filter(user=request.user,
+            if not Shopping_list.objects.filter(user=request.user,
                                                 recipe=recipe).exists():
-                Shopping_cart.objects.create(user=request.user, recipe=recipe)
+                Shopping_list.objects.create(user=request.user, recipe=recipe)
                 return Response(serializer.data,
-                                status=status.HTTP_201_CREATED)
+                                status=HTTPStatus.CREATED)
             return Response({'errors': 'Рецепт уже в списке покупок.'},
-                            status=status.HTTP_400_BAD_REQUEST)
+                            status=HTTPStatus.BAD_REQUEST)
 
         if request.method == 'DELETE':
-            get_object_or_404(Shopping_cart, user=request.user,
+            get_object_or_404(Shopping_list, user=request.user,
                               recipe=recipe).delete()
             return Response(
                 {'detail': 'Рецепт успешно удален из списка покупок.'},
-                status=status.HTTP_204_NO_CONTENT
-            )
+                status=HTTPStatus.NO_CONTENT)
+        
+    @action(
+        methods=['GET'],
+        permission_classes=[IsAuthenticated],
+        detail=True
+    )
+    def download_shopping_list(self, request, **kwargs):
+        ingredients = (
+            Recipes.objects
+            .filter(recipe__shopping_recipe__user=request.user)
+            .values('ingredient')
+            .annotate(total_amount=Sum('amount'))
+            .values_list('ingredient__name', 'total_amount',
+                         'ingredient__measurement_unit')
+        )
+        file_list = []
+        [file_list.append(
+            '{} - {} {}.'.format(*ingredient)) for ingredient in ingredients]
+        file = HttpResponse('Cписок покупок:\n' + '\n'.join(file_list),
+                            content_type='text/plain')
+        file['Content-Disposition'] = (f'attachment; filename={FILE_NAME}')
+        return file

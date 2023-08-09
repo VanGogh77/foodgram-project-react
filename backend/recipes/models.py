@@ -78,12 +78,10 @@ class Recipes(models.Model):
     ingredients = models.ManyToManyField(
         Ingredient,
         verbose_name='Ингредиенты',
-        unique=True,
     )
     tag = models.ManyToManyField(
         Tag,
         verbose_name='Тег',
-        unique=True,
     )
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления в минутах',
