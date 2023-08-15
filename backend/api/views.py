@@ -2,12 +2,17 @@ from http import HTTPStatus
 from django.shortcuts import render
 from django.db.models import Sum
 from django.http import HttpResponse
+from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
+from django.core.mail import send_mail
 from rest_framework import viewsets, filters, generics, mixins
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import AccessToken
 from .pagination import CustomPaginator
+from django.db import IntegrityError
 
 from foodgram_backend.settings import FILE_NAME
 from users.models import Subscribe, User
@@ -19,8 +24,52 @@ from .serializers import (
     RecipeSerializer, SubscribesSerializer, SubscribeAuthorSerializer,
     TagSerializer, IngredientSerializer, RecipeIngredientSerializer,
     RecipePageSerializer, RecipeIngredientCreateSerializer,
-    RecipeCreateSerializer
+    RecipeCreateSerializer, TokenSerializer
 )
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def signup(request):
+    serializer = SignUpSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    email = serializer.validated_data['email']
+    username = serializer.validated_data['username']
+    try:
+        user, create = User.objects.get_or_create(
+            username=username,
+            email=email
+        )
+    except IntegrityError:
+        return Response('Email занят', status=HTTPStatus.BAD_REQUEST)
+    confirmation_code = default_token_generator.make_token(user)
+    send_mail(
+        subject='Регистрация',
+        message=f'Код подтверждения: {confirmation_code}',
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+    )
+    return Response(serializer.data, status=HTTPStatus.OK)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def token_jwt(request):
+    serializer = TokenSerializer(data=request.data)
+    if serializer.is_valid():
+        user = get_object_or_404(
+            User, username=request.data.get('username')
+        )
+        if not default_token_generator.check_token(
+            user, request.data.get('confirmation_code')
+        ):
+            return Response(
+                'Неверный код',
+                status=HTTPStatus.BAD_REQUEST
+            )
+        token = {'token': str(AccessToken.for_user(user))}
+        return Response(token, status=HTTPStatus.OK)
+    return Response(serializer.errors, status=HTTPStatus.BAD_REQUEST)
 
 
 class UserViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,

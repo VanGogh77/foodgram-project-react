@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.db import transaction
 
 from django.contrib.auth.password_validation import validate_password
 from drf_extra_fields.fields import Base64ImageField
@@ -38,6 +39,12 @@ class SignUpSerializer(serializers.ModelSerializer):
             'email': {'required': True},
             'password':{'required':True},
         }
+
+
+class TokenSerializer(serializers.Serializer):
+    """Сериализатор для получения токена."""
+    username = serializers.CharField()
+    confirmation_code = serializers.CharField()
 
 
 class ChangePasswordSerializer(serializers.ModelSerializer):
@@ -127,8 +134,7 @@ class RecipePageSerializer(serializers.ModelSerializer):
     """Сериализатор списка рецептов"""
     author = UserListSerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
-    ingredients = RecipeIngredientSerializer(
-        many=True, read_only=True, source='recipes')
+    ingredients = RecipeIngredientSerializer ()
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
     image = Base64ImageField()
@@ -174,3 +180,11 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             'image': {'required': True, 'allow_blank': False},
             'cooking_time': {'required': True},
         }
+    
+    @transaction.atomic
+    def create(self, validated_data):
+        author = self.context.get('request').user
+        tags = validated_data.pop('tags')
+        recipe = Recipes.objects.create(author=author, **validated_data)
+        recipe.tags.set(tags)
+        return recipe

@@ -11,7 +11,12 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'blablabla')
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'host.docker.internal',
+    'localhost',
+    'backend',
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
