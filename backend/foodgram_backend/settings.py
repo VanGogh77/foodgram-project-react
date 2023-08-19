@@ -11,12 +11,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'blablabla')
 
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    '127.0.0.1',
-    'host.docker.internal',
-    'localhost',
-    'backend',
-]
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -27,12 +22,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
-    'djoser',
-    'users.apps.UsersConfig',
     'api.apps.ApiConfig',
+    'users.apps.UsersConfig',
     'recipes.apps.RecipesConfig',
+    'djoser',
+    'django_filters',
+    'colorfield',
+    'debug_toolbar',
 ]
-
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -42,6 +39,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'foodgram_backend.urls'
@@ -74,22 +72,26 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME': ('django.contrib.auth.password_validation'
+                 '.UserAttributeSimilarityValidator'),
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'NAME':
+        'django.contrib.auth.password_validation.MinimumLengthValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'NAME':
+        'django.contrib.auth.password_validation.CommonPasswordValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'NAME':
+        'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
 
 LANGUAGE_CODE = 'ru'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -107,21 +109,22 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny', 
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
-    'DEFAULT_PAGINATION_CLASS': [
-        'api.pagination.CustomPaginator',
-    ],
-    'PAGE_SIZE': 6,
-    'SEARCH_PARAM': 'name',
+    "DEFAULT_PAGINATION_CLASS": "api.pagination.CustomPaginator",
+    "PAGE_SIZE": 6,
 }
 
 DJOSER = {
     'LOGIN_FIELD': 'email',
 }
 
-FILE_NAME = 'shopping_cart.txt'
+CSV_FILES_DIR = os.path.join(BASE_DIR, 'data')
+AUTH_USER_MODEL = 'users.User'
+INTERNAL_IPS = [
+    '127.0.0.1',
+]
