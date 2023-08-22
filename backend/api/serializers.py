@@ -17,7 +17,7 @@ class UserCreateSerializer(UserCreateSerializer):
         fields = ('id', 'email', 'username',
                   'first_name', 'last_name',
                   'password')
-        extra_kwargs = {"password": {"write_only": True}}
+        extra_kwargs = {'password': {'write_only': True}}
 
     def validate(self, data):
         if data.get('username') == 'me':
@@ -140,7 +140,7 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
 class IngredientFullSerializer(serializers.ModelSerializer):
 
     id = serializers.ReadOnlyField(
-        source="ingredient.id"
+        source='ingredient.id'
     )
     name = serializers.ReadOnlyField(
         source='ingredient.name'

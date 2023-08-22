@@ -24,13 +24,14 @@ services:
       - ./.env
     depends_on:
         - db
+    restart: always
 
   frontend:
     build: ../frontend
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:
-      - backend
+      - db
 
   nginx:
     image: nginx:1.19.3

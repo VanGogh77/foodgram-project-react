@@ -1,6 +1,6 @@
 from django.db import models
 from colorfield.fields import ColorField
-from django.core.validators import MinValueValidator, RegexValidator
+from django.core.validators import MinValueValidator, validate_slug
 
 from users.models import User
 
@@ -24,11 +24,7 @@ class Tag(models.Model):
         max_length=50,
         verbose_name='slug',
         unique=True,
-        null=True,
-        validators=[RegexValidator(
-            regex=r'^[-a-zA-Z0-9_]+$',
-            message='Слаг тега содержит недопустимый символ'
-        )]
+        validators=[validate_slug]
     )
 
     class Meta:

@@ -20,7 +20,7 @@ from recipes.models import (
 )
 from users.models import User, Subscription
 from api.filters import IngredientsFilter, RecipesFilter
-from api.permissions import ReadOnly, IsOwnerOrReadOnly
+from api.permissions import AuthorOrReadOnly
 from api.utils import create_shopping_cart
 from api.serializers import (FavoriteSerializer, IngredientSerializer,
                              RecipeGETSerializer, RecipeSerializer,
@@ -35,13 +35,10 @@ class CustomUserViewSet(UserViewSet):
 
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
-    permission_classes = (IsOwnerOrReadOnly,)
 
     @action(
-        detail=False,
+        detail=True,
         methods=['get', 'patch'],
-        url_path='me',
-        url_name='me',
         permission_classes=(IsAuthenticated,)
     )
     def get_me(self, request):
@@ -80,7 +77,7 @@ class CustomUserViewSet(UserViewSet):
                 author_serializer.data, status=HTTPStatus.CREATED
             )
         subscription = get_object_or_404(
-            Subscription, subscriber=request.user, author=author
+            Subscription, subscriber=request.user, author=author,
         )
         subscription.delete()
         return Response(status=HTTPStatus.NO_CONTENT)
@@ -105,7 +102,7 @@ class CustomUserViewSet(UserViewSet):
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
-    """Вьюсет для создания тегов."""
+    """Вьюсет тегов."""
 
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
@@ -130,7 +127,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, ReadOnly)
+    permission_classes = (IsAuthenticatedOrReadOnly, AuthorOrReadOnly)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipesFilter
 

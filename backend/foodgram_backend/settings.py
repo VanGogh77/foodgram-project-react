@@ -115,12 +115,17 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
-    "DEFAULT_PAGINATION_CLASS": "api.pagination.CustomPaginator",
-    "PAGE_SIZE": 6,
+    'DEFAULT_PAGINATION_CLASS': 'api.pagination.CustomPaginator',
+    'PAGE_SIZE': 6,
 }
 
 DJOSER = {
     'LOGIN_FIELD': 'email',
+    'HIDE_USERS': False,
+    'PERMISSIONS': {
+        'user': ['djoser.permissions.CurrentUserOrAdminOrReadOnly'],
+        'user_list': ['rest_framework.permissions.AllowAny'],
+    },
 }
 
 CSV_FILES_DIR = os.path.join(BASE_DIR, 'data')

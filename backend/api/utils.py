@@ -12,7 +12,7 @@ def create_shopping_cart(ingredients_cart):
         "attachment; filename='shopping_cart.pdf'"
     )
     pdfmetrics.registerFont(
-        TTFont('Arial', 'data/arial.ttf', 'UTF-8')
+        TTFont('Arial', './arial.ttf', 'UTF-8')
     )
     buffer = io.BytesIO()
     pdf_file = canvas.Canvas(buffer)

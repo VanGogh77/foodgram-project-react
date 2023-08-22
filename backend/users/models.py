@@ -77,6 +77,10 @@ class Subscription(models.Model):
                 fields=['author', 'subscriber'],
                 name='unique_subscription'
             ),
+            models.CheckConstraint(
+                check=~models.Q(author=models.F('subscriber')),
+                name='check_subscription'
+            )
         )
 
     def __str__(self):
