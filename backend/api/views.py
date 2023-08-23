@@ -76,11 +76,16 @@ class CustomUserViewSet(UserViewSet):
             return Response(
                 author_serializer.data, status=HTTPStatus.CREATED
             )
-        subscription = get_object_or_404(
-            Subscription, subscriber=request.user, author=author,
+        subscribtion = Subscription.objects.filter(
+            subscriber=request.user, author=author,
         )
-        subscription.delete()
-        return Response(status=HTTPStatus.NO_CONTENT)
+        if subscribtion:
+            subscribtion.delete()
+            return Response(status=HTTPStatus.NO_CONTENT)
+        return Response(
+            {'error': 'Вы не подписаны на пользователя'},
+            status=HTTPStatus.BAD_REQUEST
+        )
 
     @action(
         detail=False,
