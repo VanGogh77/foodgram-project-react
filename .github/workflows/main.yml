@@ -72,7 +72,7 @@ jobs:
         # которые нужно выполнить на сервере, 
         # с которым установлено соединение
         script: |
-          cd foodgram-project-react/infra
+          cd foodgram-project-react
           # Выполняет pull образов Docker Hub
           sudo docker compose -f docker-compose.production.yml pull
           # Перезапускает все контейнеры в Docker Compose
