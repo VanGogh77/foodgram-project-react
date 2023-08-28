@@ -1,6 +1,6 @@
-static/
+backend/static/
 .vscode/
-media/
+backend/media/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
